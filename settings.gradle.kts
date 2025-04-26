@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Wendy Companion X"
 include(":app")
- 

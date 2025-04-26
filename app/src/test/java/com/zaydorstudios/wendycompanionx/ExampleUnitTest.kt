@@ -1,4 +1,4 @@
-package com.example.wendycompanionx
+package com.zaydorstudios.wendycompanionx
 
 import org.junit.Test
 
