@@ -48,6 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zaydorstudios.wendycompanionx.MainActivity
 import com.zaydorstudios.wendycompanionx.ui.theme.WendyCompanionXTheme
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.forms.submitForm
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.parameters
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun LoginForm(modifier: Modifier = Modifier) {
@@ -92,7 +100,11 @@ fun LoginForm(modifier: Modifier = Modifier) {
             }
             Spacer(modifier = Modifier.height(5.dp))
             Button(
-                onClick = {},
+                onClick = {
+                    runBlocking {
+                        pingBackend()
+                    }
+                },
                 enabled = true,
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -101,6 +113,15 @@ fun LoginForm(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+private suspend fun pingBackend() {
+    // adb reverse tcp:3000 tcp:80
+    val client = HttpClient(CIO)
+    val response: HttpResponse = client.get("http://localhost:3000")
+
+    println(response.bodyAsText())
+    client.close()
 }
 
 @Composable
@@ -210,11 +231,32 @@ data class Credentials(
     fun isNotEmpty(): Boolean = email.isNotEmpty() && password.isNotEmpty()
 }
 
+suspend fun checkLoginWithBackend(credentials: Credentials): Boolean {
+    val client = HttpClient(CIO)
+    val response: HttpResponse =
+        client.submitForm(
+            "http://localhost:3000/result",
+            formParameters =
+                parameters {
+                    append("email", credentials.email)
+                    append("password", credentials.password)
+                },
+        )
+
+    client.close()
+    println(response)
+    return response.status.value == 200
+}
+
 fun checkCredentials(
     credentials: Credentials,
     context: Context,
 ): Boolean {
-    if (credentials.isNotEmpty()) {
+    var isLoginValid: Boolean
+    runBlocking {
+        isLoginValid = checkLoginWithBackend(credentials)
+    }
+    if (isLoginValid) {
         context.startActivity(Intent(context, MainActivity::class.java))
         (context as Activity).finish()
         return true

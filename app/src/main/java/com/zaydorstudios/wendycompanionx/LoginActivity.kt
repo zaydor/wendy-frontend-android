@@ -10,6 +10,7 @@ import com.zaydorstudios.wendycompanionx.ui.theme.WendyCompanionXTheme
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             WendyCompanionXTheme {
