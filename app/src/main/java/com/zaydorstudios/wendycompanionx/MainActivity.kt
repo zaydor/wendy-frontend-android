@@ -24,6 +24,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.zaydorstudios.wendycompanionx.ui.theme.WendyCompanionXTheme
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,12 +79,25 @@ class MainActivity : ComponentActivity() {
                     },
                     shape = RoundedCornerShape(5.dp),
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Log Out")}
+                ) { Text("Log Out") }
             }
         }
     }
 
+    private suspend fun logout() {
+        val client = HttpClient(CIO)
+        val response: HttpResponse =
+            client.get(
+                "http://localhost:3000/logout",
+            )
+        println(response)
+        client.close()
+    }
+
     private fun toLoginActivity(context: Context) {
+        runBlocking {
+            logout()
+        }
         context.startActivity(Intent(context, LoginActivity::class.java))
         (context as Activity).finish()
     }
